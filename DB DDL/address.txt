@@ -1,0 +1,17 @@
+-- goot.address definition
+
+CREATE TABLE `address` (
+  `address_id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `user_id` varchar(100) NOT NULL,
+  `recipient` varchar(100) NOT NULL,
+  `phone` varchar(30) DEFAULT NULL,
+  `zipcode` varchar(20) DEFAULT NULL,
+  `addr_line1` varchar(255) NOT NULL,
+  `addr_line2` varchar(255) DEFAULT NULL,
+  `is_default` tinyint(1) DEFAULT 0,
+  `created_at` datetime DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`address_id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `address_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

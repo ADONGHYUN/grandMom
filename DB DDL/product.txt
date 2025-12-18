@@ -1,0 +1,13 @@
+-- goot.product definition
+
+CREATE TABLE `product` (
+  `product_id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `product_name` varchar(255) NOT NULL,
+  `price` int(11) NOT NULL,
+  `category` bigint(20) DEFAULT NULL,
+  `stock` int(11) NOT NULL DEFAULT 0,
+  `description` text DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`product_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

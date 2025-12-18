@@ -1,0 +1,16 @@
+-- goot.orders definition
+
+CREATE TABLE `orders` (
+  `order_id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `user_id` varchar(100) NOT NULL,
+  `order_name` varchar(255) NOT NULL,
+  `total_amount` int(11) NOT NULL,
+  `order_status` varchar(20) DEFAULT 'PENDING' COMMENT 'PAYMENT_READY	결제 대기: 주문서가 DB에 저장되었고, 결제를 기다리는 상태. (prepareOrder 완료)\r\nPAID	결제 완료: 결제 금액 검증 및 승인 완료. 출고 대기 상태. (completePayment 완료)\r\nPROCESSING	상품 준비 중: 관리자가 주문 확인 후 상품을 포장/준비 중인 상태.\r\nSHIPPED	배송 중: 상품이 출고되어 택배사에서 배송 중인 상태.\r\nDELIVERED	배송 완료: 고객에게 배송이 최종 완료된 상태.\r\nCANCELED	주문 취소: 결제 전/후 고객 요청이나 시스템 문제로 인해 주문이 취소됨.\r\nREFUNDED	환불 완료: 취소에 따른 환불 처리가 최종 완료됨.\r\nPAYMENT_FAILED	결제 실패: 결제 시도가 실패했거나 승인받지 못함. (선택적)',
+  `receiver_name` varchar(100) NOT NULL,
+  `receiver_phone` varchar(20) NOT NULL,
+  `receiver_address` varchar(255) NOT NULL,
+  `delivery_memo` varchar(500) DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`order_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
