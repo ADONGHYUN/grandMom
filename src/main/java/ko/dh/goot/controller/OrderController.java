@@ -1,14 +1,7 @@
 package ko.dh.goot.controller;
 
 
-import java.nio.charset.StandardCharsets;
-import java.time.Instant;
-import java.util.Base64;
 import java.util.Map;
-import java.util.TreeMap;
-
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -23,9 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.json.JsonWriteFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 
 import ko.dh.goot.dto.OrderRequest;
 import ko.dh.goot.dto.OrderResponse;
@@ -47,10 +38,7 @@ public class OrderController {
 	
 	@Value("${portone.channel-key}")
     private String kakaoChannelKey;
-	
-	@Value("${portone.webhook-secret}")
-    private String webhookSecret;
-	
+
 	private final ProductService productService;
 	private final OrderService orderService;
 	private final WebhookService webhookService;
@@ -137,10 +125,7 @@ public class OrderController {
         }
     	
         try {
-            // -----------------------------------------------------------
-            // 💡 dataMap 변수 선언 및 초기화 (parsedPayload 사용)
-            // -----------------------------------------------------------
-            
+
             @SuppressWarnings("unchecked")
             Map<String, Object> dataMap = (Map<String, Object>) parsedPayload.get("data"); 
 
@@ -152,18 +137,12 @@ public class OrderController {
             
             // 1. paymentId 추출 시도 (가장 중요한 값)
             String paymentId = (String) dataMap.get("paymentId"); 
-            if (paymentId == null) {
-                paymentId = (String) dataMap.get("id"); // 폴백 ID
-            }
-            
-            // 2. 필수 데이터 (paymentId) 확인
+
             if (paymentId == null) { 
                 log.error("필수 데이터 (paymentId) 추출 실패.");
                 return ResponseEntity.badRequest().body(Map.of("message", "필수 데이터 (paymentId) 누락."));
             }
-       
-            System.out.println("결제 상세요청을 위한 paymentId ::");
-            System.out.println(paymentId);
+
             // 🚨 여기서 paymentId를 사용하여 API 서비스 호출
             Map<String, Object> apiDetails = portoneApiService.portonePaymentDetails(paymentId);
             

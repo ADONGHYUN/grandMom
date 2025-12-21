@@ -45,10 +45,16 @@ public class PaymentController {
         return "payment_complete";
     }
 
-    @PostMapping("/webhook")
-    @ResponseBody
-    public String webhook(@RequestBody Map<String, Object> payload) {
-        paymentService.handlePaymentWebhook(payload);
-        return "ok";
+    @PostMapping("/handlePaymentWebhook")
+    public ResponseEntity<?> handlePaymentWebhook(
+    		@RequestBody String payload,
+            @RequestHeader("webhook-id") String webhookId,
+            @RequestHeader("webhook-signature") String webhookSignature,
+            @RequestHeader("webhook-timestamp") String webhookTimestamp){
+    	
+        paymentService.handlePaymentWebhook(payload, webhookId, webhookSignature, webhookTimestamp);
+        
+        
+        return ResponseEntity.ok(Map.of("message", "PG사 웹훅 처리 성공 및 주문 완료"));
     }
 }
