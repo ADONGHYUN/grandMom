@@ -4,16 +4,27 @@ import java.time.Instant;
 import java.nio.charset.StandardCharsets;
 
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import ko.dh.goot.dao.OrderMapper;
+import ko.dh.goot.dao.PaymentMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
+@RequiredArgsConstructor
 @Service
 public class WebhookService {
 
@@ -26,11 +37,19 @@ public class WebhookService {
     
     private final String HMAC_SHA256 = "HmacSHA256";
     
+    private final ObjectMapper objectMapper;
     
     
     public boolean verifyWebhook(String payload, String webhookId, String webhookSignature, String webhookTimestamp) {
-    	System.out.println("ㅁㅁㅁㅁㅁ ㅁㅁ");
-    	try{   		
+    	
+    	if (!StringUtils.hasText(payload) || !StringUtils.hasText(webhookId) || 
+	            !StringUtils.hasText(webhookSignature) || !StringUtils.hasText(webhookTimestamp)) {
+	            log.error("🚨 [Webhook Check] 필수 헤더 또는 데이터가 누락되었거나 비어있습니다.");
+	            return false;
+	        }
+    	
+    	try{   
+	 
     		boolean verifyTimestamp = this.verifyTimestamp(webhookTimestamp);
     		
     		String selfSigniture = this.selfSigniture(webhookId, webhookTimestamp, payload);
@@ -82,7 +101,36 @@ public class WebhookService {
 
             return "v1," + Base64.getEncoder().encodeToString(macData);
         } catch (Exception e) {
+        	log.warn("시그니처 생성 중 오류 발생");
             throw new RuntimeException("시그니처 생성 중 오류 발생", e);
+        }
+    }
+    
+    public Map<String, Object> extractWebhookData(String payload){
+    	Map<String, Object> parsedPayload;
+    	try {
+            parsedPayload = objectMapper.readValue(payload, new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {});
+        
+            @SuppressWarnings("unchecked")
+            Map<String, Object> dataMap = (Map<String, Object>) parsedPayload.get("data");
+            if (dataMap == null) {
+            	log.info("payload가 data 구조 아님");
+                dataMap = parsedPayload;
+            }
+    	
+            String paymentId = (String) dataMap.get("paymentId");
+            
+            if (paymentId == null) {
+                throw new IllegalArgumentException("페이로드에 paymentId가 누락되었습니다.");
+            }
+            
+            Map<String, Object> result = new HashMap<>();
+            result.put("paymentId", paymentId);
+            return result;
+            
+    	} catch (JsonProcessingException e) {
+            log.error("🚨 [Webhook] JSON 파싱 실패. payload={}", payload, e);
+            throw new IllegalArgumentException("유효하지 않은 JSON 페이로드입니다.", e);
         }
     }
     
