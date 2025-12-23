@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ko.dh.goot.dao.OrderMapper;
 import ko.dh.goot.dao.PaymentMapper;
+import ko.dh.goot.dto.WebhookPayload;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
@@ -106,6 +107,8 @@ public class WebhookService {
         }
     }
     
+    /*
+    WebhookPayload로 대체
     public Map<String, Object> extractWebhookData(String payload){
     	Map<String, Object> parsedPayload;
     	try {
@@ -132,7 +135,7 @@ public class WebhookService {
             log.error("🚨 [Webhook] JSON 파싱 실패. payload={}", payload, e);
             throw new IllegalArgumentException("유효하지 않은 JSON 페이로드입니다.", e);
         }
-    }
+    }*/
     
     
 
