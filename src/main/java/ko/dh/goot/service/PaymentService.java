@@ -18,6 +18,7 @@ import ko.dh.goot.controller.OrderController;
 import ko.dh.goot.dao.OrderMapper;
 import ko.dh.goot.dao.PaymentMapper;
 import ko.dh.goot.dto.Payment;
+import ko.dh.goot.dto.WebhookPayload;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
@@ -30,7 +31,7 @@ public class PaymentService {
 	private final WebhookService webhookService;
 	private final PortoneApiService portoneApiService;	
     private final PaymentMapper paymentMapper;
-    private final OrderMapper orderMapper;
+    private final ObjectMapper objectMapper;
     
     
     @Value("${portone.store-id}")
@@ -147,27 +148,50 @@ public class PaymentService {
 	public void handlePaymentWebhook(String payload, String webhookId, String webhookSignature, String webhookTimestamp) {
 		boolean verifyWebhook = webhookService.verifyWebhook(payload, webhookId, webhookSignature, webhookTimestamp);
 		
-		System.out.println("payload::");
-    	System.out.println(payload);
+		
     	
     	if(!verifyWebhook) {
     		log.error("🚨 [Webhook] 시그니처 검증 실패. 위조 요청 가능성. payload={}", payload); 
     		throw new IllegalArgumentException("Invalid Webhook Signature.");
     	}
     	
-    	Map<String, Object> payloadData = webhookService.extractWebhookData(payload);
-    	
-    	String paymentId = (String) payloadData.get("paymentId");
-    	
-    	Map<String, Object> apiDetails = portoneApiService.portonePaymentDetails(paymentId);
-    	
-    	System.out.println("apiDetails::::::");
-        System.out.println(apiDetails);
+    	try {
+    		WebhookPayload payloadData = objectMapper.readValue(payload, WebhookPayload.class);
+    		
+    		System.out.println("payloadData::");
+        	System.out.println(payloadData);
+        	       	
+        	if (!"Transaction.Paid".equals(payloadData.getType())) {
+                log.info("[Webhook] Ignore type={}", payloadData.getType());
+                return;
+            }
+        	
+        	if (payloadData.getData() == null || payloadData.getData().getPaymentId() == null) {
+                log.error("🚨 [Webhook] paymentId 누락. payload={}", payload);
+                return;
+            }
+        	
+        	
+        	
+        	String paymentId = payloadData.getData().getPaymentId();
+        	
+        	Map<String, Object> apiDetails = portoneApiService.portonePaymentDetails(paymentId);
+        	
+        	System.out.println("apiDetails::::::");
+            System.out.println(apiDetails);
 
-    	Long orderId = (Long) apiDetails.get("orderId");
-        System.out.println("✅ 최종 확보된 주문 ID (orderId): " + orderId);
+        	Long orderId = (Long) apiDetails.get("orderId");
+            System.out.println("✅ 최종 확보된 주문 ID (orderId): " + orderId);
 
-        orderService.completeOrderTransaction(paymentId, orderId);
+            orderService.completeOrderTransaction(paymentId, orderId);
+    	} catch (JsonProcessingException e) {
+            log.error("🚨 [Webhook] JSON 파싱 실패. payload={}", payload, e);
+            return;
+        } catch (Exception e) {
+            log.error("🚨 [Webhook] 처리 중 예외 발생", e);
+            return;
+        }
+    	
         
 	}
 
