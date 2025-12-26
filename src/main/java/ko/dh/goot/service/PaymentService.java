@@ -153,9 +153,7 @@ public class PaymentService {
 
 	public void handlePaymentWebhook(String payload, String webhookId, String webhookSignature, String webhookTimestamp) {
 		boolean verifyWebhook = webhookService.verifyWebhook(payload, webhookId, webhookSignature, webhookTimestamp);
-		
-		
-    	
+	
     	if(!verifyWebhook) {
     		log.error("🚨 [Webhook] 시그니처 검증 실패. 위조 요청 가능성. payload={}", payload); 
     		throw new IllegalArgumentException("Invalid Webhook Signature.");
