@@ -17,5 +17,21 @@ public class WebhookPayload {
         private String paymentId;
         private String transactionId;
         private String storeId;
+        
+        @Override
+        public String toString() {
+            return "Data{" +
+                   "paymentId='" + paymentId + '\'' +
+                   ", transactionId='" + transactionId + '\'' +
+                   ", storeId='" + storeId + '\'' +
+                   '}';
+        }
     }
+
+	@Override
+	public String toString() {
+		return "WebhookPayload [type=" + type + ", timestamp=" + timestamp + ", data=" + data + "]";
+	}
+    
+    
 }
