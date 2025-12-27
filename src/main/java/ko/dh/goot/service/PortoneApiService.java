@@ -6,12 +6,16 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.http.*;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import ko.dh.goot.dto.PortOnePaymentResponse;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.Map;
+import java.time.OffsetDateTime;
 import java.util.HashMap;
 
 /**
@@ -37,7 +41,9 @@ public class PortoneApiService {
 
     public PortoneApiService() {
         this.restTemplate = new RestTemplate();
-        this.objectMapper = new ObjectMapper();
+        this.objectMapper = JsonMapper.builder()
+        	    .addModule(new JavaTimeModule())
+        	    .build();
     }
     
     public PortOnePaymentResponse portonePaymentDetails(String paymentId) {
@@ -49,27 +55,58 @@ public class PortoneApiService {
         HttpEntity<Void> entity = new HttpEntity<>(headers);
 
         try {
-            ResponseEntity<PortOnePaymentResponse> response =
-                restTemplate.exchange(
-                    paymentUrl,
-                    HttpMethod.GET,
-                    entity,
-                    PortOnePaymentResponse.class
-                );
+        	ResponseEntity<String> rawResponse =
+        		    restTemplate.exchange(paymentUrl, HttpMethod.GET, entity, String.class);
 
+    		if (!rawResponse.getStatusCode().is2xxSuccessful()) {
+    		    log.error("PortOne API 실패. status={}, body={}", rawResponse.getStatusCode(), rawResponse.getBody());
+    		    throw new IllegalStateException("PortOne API HTTP 실패");
+    		}
+    		
+    		System.out.println("rawResponse:");
+    		System.out.println(rawResponse);
+
+    		String rawBody = rawResponse.getBody();
+    		if (rawBody == null || rawBody.isBlank()) {
+    		    throw new IllegalStateException("PortOne API 응답 body 없음");
+    		}
+
+    		System.out.println("dto맵핑::::::::::::");
+    		/* ===== 1. 기본 DTO 매핑 ===== */
+    		PortOnePaymentResponse body =
+    		        objectMapper.readValue(rawBody, PortOnePaymentResponse.class);
+    		
+    		
+    		System.out.println("body:::::::::::::");
+    		System.out.println(body);
+    		
+    		
+    		/* ===== 2. JsonNode로 추가 필드 추출 ===== */
+    		JsonNode root = objectMapper.readTree(rawBody);
+
+    		/*
+    		//method.provider
+    		JsonNode providerNode = root.path("method").path("provider");
+    		if (!providerNode.isMissingNode()) {
+    		    body.applyProvider(providerNode.asText());
+    		}
+
+    		//paidAt
+    		JsonNode paidAtNode = root.path("paidAt");
+    		if (!paidAtNode.isMissingNode()) {
+    		    body.applyPaidAt(
+    		        OffsetDateTime.parse(paidAtNode.asText()).toLocalDateTime()
+    		    );
+    		}
             System.out.println("사용한 paymentId:");
             System.out.println(paymentId);
-            System.out.println("포트원 respose::");
-            System.out.println(response);
             System.out.println("body::");
-            System.out.println(response.getBody());
+            System.out.println(body);
+            System.out.println(" Node::");
+            System.out.println(providerNode.asText());
+            System.out.println(paidAtNode.asText());
             
-            PortOnePaymentResponse body = response.getBody();
-
-            if (!response.getStatusCode().is2xxSuccessful() || body == null) {
-                throw new IllegalStateException("PortOne API 응답 실패");
-            }
-
+      
             if (!paymentId.equals(body.getId())) {
                 throw new IllegalStateException(
                     "결제 ID 불일치. request paymentId=" + paymentId
@@ -77,14 +114,14 @@ public class PortoneApiService {
                 );
             }
             
-            /* ===== 1. 상태 검증 ===== */
+            // ===== 1. 상태 검증 =====
             if (!"PAID".equals(body.getStatus())) {
                 throw new IllegalStateException(
                     "결제 완료 상태 아님. status=" + body.getStatus()
                 );
             }
 
-            /* ===== 2. 금액 검증 ===== */
+            // ===== 2. 금액 검증 =====
             PortOnePaymentResponse.Amount amount = body.getAmount();
 
             if (amount == null || amount.getTotal() == null || amount.getPaid() == null) {
@@ -96,9 +133,9 @@ public class PortoneApiService {
                     "전액 결제 아님. total=" + amount.getTotal()
                         + ", paid=" + amount.getPaid()
                 );
-            }
+            }*/
 
-            /* ===== 3. orderId 검증 ===== */			
+            // ===== 3. orderId 검증 =====		
 			Long extractOrderId = extractOrderId(body.getCustomData());
 			body.applyOrderId(extractOrderId);
 			 

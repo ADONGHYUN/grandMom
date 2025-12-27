@@ -49,7 +49,8 @@ public class PaymentService {
     		WebhookPayload payloadData = objectMapper.readValue(payload, WebhookPayload.class);
     		
     		System.out.println("payloadData::");
-        	System.out.println(payloadData);
+        	System.out.println(payloadData.toString());
+        	log.info("{}", payloadData);
         	       	
         	if (!TRANSACTION_PAID.equals(payloadData.getType())) {
                 log.info("[Webhook] Ignore type={}", payloadData.getType());
@@ -89,7 +90,7 @@ public class PaymentService {
         /* ===== 2. PG 결제 조회 ===== */
         PortOnePaymentResponse portonePaymentDetails = portoneApiService.portonePaymentDetails(paymentId);
 
-        Long orderId = portonePaymentDetails.getOrderId();
+        Long orderId = 1L;//portonePaymentDetails.getOrderId();
 
         /* ===== 3. 주문 조회 ===== */
         Order order = orderMapper.selectOrder(orderId);
@@ -105,10 +106,12 @@ public class PaymentService {
                     + ", paid=" + paidAmount
             );
         }
-/*
-        // ===== 5. 결제 저장 =====
-        paymentMapper.insertPayment(paymentId, orderId, paidAmount);
 
+        // ===== 5. 결제 저장 =====
+        //paymentMapper.insertPayment(paymentId, orderId, paidAmount);
+        paymentMapper.insertPayment(portonePaymentDetails);
+        
+        /*
         // ===== 6. 주문 상태 변경 =====
         orderService.changeOrderStatus(
             orderId,
