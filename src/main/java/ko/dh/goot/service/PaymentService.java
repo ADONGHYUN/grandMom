@@ -91,7 +91,7 @@ public class PaymentService {
         PortOnePaymentResponse portonePaymentDetails = portoneApiService.portonePaymentDetails(paymentId);
 
   
-        Long orderId = 1L;//portonePaymentDetails.getOrderId();
+        Long orderId = portonePaymentDetails.getOrderId();
 
         /* ===== 3. 주문 조회 ===== */
         Order order = orderMapper.selectOrder(orderId);
