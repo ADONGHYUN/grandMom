@@ -24,6 +24,16 @@
         <p class="mb-1">수량: <span th:text="${quantity}">1</span>개</p>
         <p class="text-danger fw-bold fs-5" id="price" th:data-price="${product.price}" th:text="${#numbers.formatInteger(product.price * quantity, 3, 'COMMA')} + '원'"></p>
       </div>
+	  <select id="optionColor">
+	    <option value="BLACK">블랙</option>
+	    <option value="WHITE">화이트</option>
+	  </select>
+
+	  <select id="optionSize">
+	    <option value="M">M</option>
+	    <option value="L">L</option>
+	  </select>
+
     </div>
   </section>
 

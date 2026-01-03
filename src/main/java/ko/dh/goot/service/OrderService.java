@@ -5,9 +5,14 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import ko.dh.goot.dao.OrderItemMapper;
 import ko.dh.goot.dao.OrderMapper;
 import ko.dh.goot.dao.ProductMapper;
 import ko.dh.goot.dto.Order;
+import ko.dh.goot.dto.OrderItem;
 import ko.dh.goot.dto.OrderRequest;
 import ko.dh.goot.dto.OrderResponse;
 import ko.dh.goot.dto.Product;
@@ -23,9 +28,11 @@ public class OrderService {
     @Value("${portone.channel-key}")
     private String channelKey;
 	
-	private final ProductMapper productMapper;
-	
+	private final ProductMapper productMapper;	
 	private final OrderMapper orderMapper;
+	private final OrderItemMapper orderItemMapper;
+	
+	private final ObjectMapper objectMapper;
 
 	public OrderResponse prepareOrder(OrderRequest req, String userId) {
 
@@ -38,7 +45,10 @@ public class OrderService {
             throw new IllegalStateException("재고가 부족합니다. 현재 재고: " + product.getStock());
         }
         
-        int serverCalculatedAmount = product.getPrice() * req.getQuantity();
+        int unitPrice = product.getPrice();
+        int quantity = req.getQuantity();
+        int serverCalculatedAmount = unitPrice * quantity;
+        
         
         Order order = Order.builder()
                 .userId(userId)
@@ -51,13 +61,39 @@ public class OrderService {
                 .deliveryMemo(req.getMemo())
                 .build();
         
-        int rowCount = orderMapper.insertOrder(order);
+        int orderInsertCount = orderMapper.insertOrder(order);
+        if (orderInsertCount != 1) {
+            throw new IllegalStateException("주문 저장 실패");
+        }
 
-        // 여기서 order_item에 저장
+        Long orderId = order.getOrderId();
+System.out.println("optionInfo::");
+System.out.println(req.getOptionInfo());
+        String optionInfoJson = null;
+        if (req.getOptionInfo() != null) {
+            try {
+                optionInfoJson = objectMapper.writeValueAsString(req.getOptionInfo());
+            } catch (JsonProcessingException e) {
+                throw new IllegalStateException("옵션 정보 직렬화 실패", e);
+            }
+        }
         
-        if (rowCount != 1) {
-            // 💡 주문 저장이 실패했으므로 예외 발생 및 트랜잭션 롤백 유도
-            throw new IllegalStateException("주문 데이터 저장에 실패했습니다. 영향 받은 행: " + rowCount);
+        /* ===== 4. order_item 스냅샷 저장 (⭐ 핵심) ===== */
+        OrderItem orderItem = OrderItem.builder()
+            .orderId(orderId)
+            .productId(product.getProductId())
+            .productName(product.getProductName())
+            .productPrice(unitPrice)
+            .quantity(quantity)
+            .totalPrice(serverCalculatedAmount)
+            .optionInfo(optionInfoJson) // JSON 그대로 저장
+            .refundStatus("NONE")
+            .build();
+
+        int orderIemInsertCount = orderItemMapper.insertOrderItem(orderItem);
+        
+        if (orderIemInsertCount != 1) {
+            throw new IllegalStateException("order_item 저장 실패");
         }
         
 		return new OrderResponse(order.getOrderId(), serverCalculatedAmount);

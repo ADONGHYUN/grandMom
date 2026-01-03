@@ -1,34 +1,52 @@
 package ko.dh.goot.dto;
 
-import java.util.Date;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@Getter
+@NoArgsConstructor
 public class OrderItem {
+
     private Long orderItemId;
+
     private Long orderId;
     private Long productId;
-    private Integer quantity;
-    private Integer price;
-    private Date createdAt;
-    private Date updatedAt;
 
-    public Long getOrderItemId() { return orderItemId; }
-    public void setOrderItemId(Long orderItemId) { this.orderItemId = orderItemId; }
+    private String productName;
+    private int productPrice;
+    private int quantity;
+    private int totalPrice;
 
-    public Long getOrderId() { return orderId; }
-    public void setOrderId(Long orderId) { this.orderId = orderId; }
+    /**
+     * JSON 문자열 그대로 저장
+     * 예: {"color":"black","size":"L"}
+     */
+    private String optionInfo;
 
-    public Long getProductId() { return productId; }
-    public void setProductId(Long productId) { this.productId = productId; }
+    /**
+     * NONE, REQUESTED, PARTIAL, REFUNDED, FAILED
+     */
+    private String refundStatus;
 
-    public Integer getQuantity() { return quantity; }
-    public void setQuantity(Integer quantity) { this.quantity = quantity; }
-
-    public Integer getPrice() { return price; }
-    public void setPrice(Integer price) { this.price = price; }
-
-    public Date getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }
-
-    public Date getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(Date updatedAt) { this.updatedAt = updatedAt; }
+    @Builder
+    public OrderItem(
+            Long orderId,
+            Long productId,
+            String productName,
+            int productPrice,
+            int quantity,
+            int totalPrice,
+            String optionInfo,
+            String refundStatus
+    ) {
+        this.orderId = orderId;
+        this.productId = productId;
+        this.productName = productName;
+        this.productPrice = productPrice;
+        this.quantity = quantity;
+        this.totalPrice = totalPrice;
+        this.optionInfo = optionInfo;
+        this.refundStatus = refundStatus;
+    }
 }

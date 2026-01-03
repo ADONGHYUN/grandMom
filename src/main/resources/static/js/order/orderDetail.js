@@ -68,26 +68,46 @@ async function handlePayment() {
  * 1단계: 주문 데이터를 서버에 전송하고 orderId와 확정 금액을 받아옴.
  */
 async function prepareOrder() {
-    const formData = new FormData(document.getElementById('orderForm'));
-    const orderData = Object.fromEntries(formData.entries());
+    const $form = $('#orderForm');
 
-    orderData.orderName = document.getElementById('productName').dataset.productname;
-    // 클라이언트 금액은 참고용으로만 보냄 (서버에서 반드시 재계산해야 함)
-    orderData.clientTotalAmount = parseInt(document.getElementById('price').dataset.price.replace(/,/g, '')); 
+    /* ===============================
+     * 기본 주문 데이터
+     * =============================== */
+    const orderData = {
+        productId: Number($form.find('[name="productId"]').val()),
+        quantity: Number($form.find('[name="quantity"]').val()),
+        receiver: $form.find('[name="receiver"]').val(),
+        phone: $form.find('[name="phone"]').val(),
+        address: $form.find('[name="address"]').val(),
+        memo: $form.find('[name="memo"]').val(),
+        orderName: $('#productName').data('productname')
+    };
 
-    const prepareOrderResponse = await fetch("/order/prepareOrder", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(orderData),
+    /* ===============================
+     * optionInfo 구성 (JSON)
+     * =============================== */
+    const optionInfo = {
+        color: $('#optionColor').val(),
+        size: $('#optionSize').val()
+    };
+
+    orderData.optionInfo = optionInfo;
+
+    /* ===============================
+     * 서버 요청
+     * =============================== */
+    const res = await fetch('/order/prepareOrder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData)
     });
 
-    if (!prepareOrderResponse.ok) {
-        const error = await prepareOrderResponse.json();
-        // 💡 실무 보완: 서버에서 전달한 구체적인 에러 메시지 사용
-        throw new Error("주문 생성 실패: " + (error.message || response.statusText));
+    if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || '주문 생성 실패');
     }
-    
-    return prepareOrderResponse.json();
+
+    return await res.json(); // { orderId, totalAmount }
 }
 
 /**

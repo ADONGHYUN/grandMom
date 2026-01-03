@@ -1,5 +1,7 @@
 package ko.dh.goot.dto;
 
+import java.util.Map;
+
 public class OrderRequest {
     private Long productId;
     private Integer quantity;
@@ -10,6 +12,12 @@ public class OrderRequest {
     private String orderName;  
     // totalAmount는 서버에서 재계산해야 안전하지만, 클라이언트가 보내주는 값도 받아서 참고할 수 있음
     private Integer clientTotalAmount;
+    
+    /**
+     * 상품 옵션 스냅샷
+     * 예: {"color":"black","size":"L"}
+     */
+    private Map<String, Object> optionInfo;
     
 	public Long getProductId() {
 		return productId;
@@ -59,6 +67,12 @@ public class OrderRequest {
 	public void setClientTotalAmount(Integer clientTotalAmount) {
 		this.clientTotalAmount = clientTotalAmount;
 	} 
+	public Map<String, Object> getOptionInfo() {
+        return optionInfo;
+    }
+    public void setOptionInfo(Map<String, Object> optionInfo) {
+        this.optionInfo = optionInfo;
+    }
 
     
 }
