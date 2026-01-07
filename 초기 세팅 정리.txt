@@ -1,0 +1,9 @@
+1. src/main/resoruces에  application.yml 추가 (apikey 보안때문에 깃허브에 안올리고 따로 관리)
+2. D:/goot/images/product -- 경로에 폴더 추가 후 이미지파일 넣기(exampleData/상품이미지에 이미지 파일 있음) 또는 application.yml에서 이미지경로 수정해도됨
+3. spring tool suit. sts-4.26.0.RELEASE 버전 사용중
+4. java 17버전 사용
+5. http://localhost:8080/product/productList -- 메인페이지로 사용
+6. ngrok 사용해야 포트원 웹훅을 local로 받을수 있음
+7. DB DDL폴더에 테이블 CREATE문 있음
+8. exampleData 폴더에 샘플 데이터 있음(이미지 포함)
+9. lombok 등록
