@@ -1,22 +1,37 @@
--- goot.order_item definition
+CREATE TABLE order_item (
+    order_item_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 
-CREATE TABLE IF NOT EXISTS order_item (
-    order_item_id   BIGINT AUTO_INCREMENT PRIMARY KEY,
-    order_id        BIGINT NOT NULL,
-    product_id      BIGINT NOT NULL,
-    
-    product_name    VARCHAR(255) NOT NULL,
-    product_price   INT NOT NULL,
-    quantity        INT NOT NULL,
-    total_price     INT NOT NULL,
-    
-    option_info     JSON COMMENT '주문 시점 상품 옵션 스냅샷',
-    
-    refund_status   VARCHAR(20) NOT NULL DEFAULT 'NONE' 
-                    COMMENT 'NONE, REQUESTED, PARTIAL, REFUNDED, FAILED',
-    `created_at` datetime DEFAULT current_timestamp(),
-  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+    order_id      BIGINT UNSIGNED NOT NULL,
+    product_id    BIGINT UNSIGNED NOT NULL,
+    option_id     BIGINT UNSIGNED NULL,
 
-   CONSTRAINT `order_item_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`) ON DELETE CASCADE,
-  CONSTRAINT `order_item_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `product` (`product_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+    product_name  VARCHAR(255) NOT NULL,
+    unit_price    INT NOT NULL,
+    quantity      INT NOT NULL,
+    total_price   INT NOT NULL,
+
+    color         VARCHAR(50) NOT NULL,
+    size          VARCHAR(50) NOT NULL,
+
+    option_info   JSON,
+    refund_status VARCHAR(20) NOT NULL DEFAULT 'NONE',
+
+    created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_order_item_order
+        FOREIGN KEY (order_id)
+        REFERENCES orders(order_id)
+        ON DELETE RESTRICT,
+
+    CONSTRAINT fk_order_item_product
+        FOREIGN KEY (product_id)
+        REFERENCES product(product_id)
+        ON DELETE RESTRICT,
+
+    CONSTRAINT fk_order_item_option
+        FOREIGN KEY (option_id)
+        REFERENCES product_option(option_id)
+        ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
