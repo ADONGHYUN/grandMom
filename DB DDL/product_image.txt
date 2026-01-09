@@ -1,13 +1,28 @@
--- goot.product_image definition
+CREATE TABLE product_image (
+    image_id        BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 
-CREATE TABLE `product_image` (
-  `image_id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `product_id` bigint(20) NOT NULL,
-  `image_path` varchar(255) NOT NULL,
-  `sort_order` int(11) DEFAULT 0,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  PRIMARY KEY (`image_id`),
-  KEY `product_id` (`product_id`),
-  CONSTRAINT `product_image_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `product` (`product_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+    product_id      BIGINT UNSIGNED NOT NULL,
+    option_id       BIGINT UNSIGNED DEFAULT NULL,
+
+    image_url       VARCHAR(512) NOT NULL,
+    original_name   VARCHAR(255),
+
+    image_type      VARCHAR(20) NOT NULL DEFAULT 'DETAIL'
+                    COMMENT 'MAIN, DETAIL, OPTION, DESC',
+
+    sort_order      INT DEFAULT 0,
+    use_yn          CHAR(1) NOT NULL DEFAULT 'Y'
+                    COMMENT '사용 여부 (Y/N)',
+
+    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_image_product
+        FOREIGN KEY (product_id)
+        REFERENCES product(product_id)
+        ON DELETE RESTRICT,
+
+    CONSTRAINT fk_image_option
+        FOREIGN KEY (option_id)
+        REFERENCES product_option(option_id)
+        ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

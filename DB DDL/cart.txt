@@ -3,7 +3,7 @@
 CREATE TABLE `cart` (
   `cart_id` bigint(20) NOT NULL AUTO_INCREMENT,
   `user_id` varchar(100) NOT NULL,
-  `product_id` bigint(20) NOT NULL,
+  `product_id` bigint(20) UNSIGNED NOT NULL,
   `quantity` int(11) NOT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
