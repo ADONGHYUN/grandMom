@@ -26,59 +26,6 @@ CREATE TABLE `address` (
   CONSTRAINT `address_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-CREATE TABLE product (
-    product_id     BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    product_name   VARCHAR(255) NOT NULL COMMENT '상품명',
-    base_price     INT NOT NULL COMMENT '기본 가격',
-    description    TEXT COMMENT '상품 상세 설명',
-
-    category_id    BIGINT COMMENT '카테고리 ID',
-
-    status ENUM('ACTIVE','HIDDEN','STOP')
-           NOT NULL DEFAULT 'ACTIVE'
-           COMMENT '상품 판매 상태',
-
-    created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                   ON UPDATE CURRENT_TIMESTAMP,
-
-    CONSTRAINT fk_product_category
-        FOREIGN KEY (category_id)
-        REFERENCES product_category(category_id)
-) ENGINE=InnoDB
-DEFAULT CHARSET=utf8mb4
-COMMENT='상품 정보';
-
-
-CREATE TABLE product_image (
-    image_id        BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-
-    product_id      BIGINT UNSIGNED NOT NULL,
-    option_id       BIGINT UNSIGNED DEFAULT NULL,
-
-    image_url       VARCHAR(512) NOT NULL,
-    original_name   VARCHAR(255),
-
-    image_type      VARCHAR(20) NOT NULL DEFAULT 'DETAIL'
-                    COMMENT 'MAIN, DETAIL, OPTION, DESC',
-
-    sort_order      INT DEFAULT 0,
-    use_yn          CHAR(1) NOT NULL DEFAULT 'Y'
-                    COMMENT '사용 여부 (Y/N)',
-
-    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT fk_image_product
-        FOREIGN KEY (product_id)
-        REFERENCES product(product_id)
-        ON DELETE RESTRICT,
-
-    CONSTRAINT fk_image_option
-        FOREIGN KEY (option_id)
-        REFERENCES product_option(option_id)
-        ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
 CREATE TABLE product_category (
     category_id     BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 
@@ -94,6 +41,29 @@ CREATE TABLE product_category (
     CONSTRAINT uk_category_name
         UNIQUE (category_name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE product (
+    product_id     BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    product_name   VARCHAR(255) NOT NULL COMMENT '상품명',
+    base_price     INT NOT NULL COMMENT '기본 가격',
+    description    TEXT COMMENT '상품 상세 설명',
+
+    category_id    BIGINT UNSIGNED COMMENT '카테고리 ID',
+
+    status ENUM('ACTIVE','HIDDEN','STOP')
+           NOT NULL DEFAULT 'ACTIVE'
+           COMMENT '상품 판매 상태',
+
+    created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                   ON UPDATE CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_product_category
+        FOREIGN KEY (category_id)
+        REFERENCES product_category(category_id)
+) ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COMMENT='상품 정보';
 
 CREATE TABLE product_option (
     option_id        BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -125,9 +95,40 @@ CREATE TABLE product_option (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
+CREATE TABLE product_image (
+    image_id        BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+
+    product_id      BIGINT UNSIGNED NOT NULL,
+    option_id       BIGINT UNSIGNED DEFAULT NULL,
+
+    image_url       VARCHAR(512) NOT NULL,
+    original_name   VARCHAR(255),
+
+    image_type      VARCHAR(20) NOT NULL DEFAULT 'DETAIL'
+                    COMMENT 'MAIN, DETAIL, OPTION, DESC',
+
+    sort_order      INT DEFAULT 0,
+    use_yn          CHAR(1) NOT NULL DEFAULT 'Y'
+                    COMMENT '사용 여부 (Y/N)',
+
+    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_image_product
+        FOREIGN KEY (product_id)
+        REFERENCES product(product_id)
+        ON DELETE RESTRICT,
+
+    CONSTRAINT fk_image_option
+        FOREIGN KEY (option_id)
+        REFERENCES product_option(option_id)
+        ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+
 CREATE TABLE orders (
     order_id         BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    user_id          VARCHAR(50) NOT NULL,
+    user_id          VARCHAR(100) NOT NULL,
 
     order_name       VARCHAR(255) NOT NULL,
     total_amount     INT NOT NULL,
@@ -217,3 +218,5 @@ CREATE TABLE payment (
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4
   COLLATE=utf8mb4_unicode_ci;
+  
+  

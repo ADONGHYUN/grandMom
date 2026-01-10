@@ -1,5 +1,3 @@
--- goot.payment definition
-
 CREATE TABLE payment (
     payment_id           VARCHAR(50)  NOT NULL,
     order_id             BIGINT       NOT NULL,

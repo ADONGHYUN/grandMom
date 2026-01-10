@@ -4,7 +4,7 @@ CREATE TABLE product (
     base_price     INT NOT NULL COMMENT '기본 가격',
     description    TEXT COMMENT '상품 상세 설명',
 
-    category_id    BIGINT COMMENT '카테고리 ID',
+    category_id    BIGINT UNSIGNED COMMENT '카테고리 ID',
 
     status ENUM('ACTIVE','HIDDEN','STOP')
            NOT NULL DEFAULT 'ACTIVE'

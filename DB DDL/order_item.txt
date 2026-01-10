@@ -1,3 +1,4 @@
+
 CREATE TABLE order_item (
     order_item_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 
@@ -33,5 +34,3 @@ CREATE TABLE order_item (
         REFERENCES product_option(option_id)
         ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-
