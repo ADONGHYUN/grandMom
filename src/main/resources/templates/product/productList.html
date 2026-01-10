@@ -20,12 +20,27 @@
     <div class="col-md-3" th:each="product : ${productList}">
       <div class="card h-100 border-0 shadow-sm">
         <a th:href="@{'/product/detail/' + ${product.productId}}">
-          <img th:src="@{'/product/' + ${product.mainImage}}" class="card-img-top" alt="상품 이미지">
+			<img class="card-img-top" th:src="${product.mainImageUrl != null 
+			                    ? product.mainImageUrl : '/images/default.jpg'}" alt="상품 이미지">
         </a>
         <div class="card-body text-center">
           <h6 class="card-title mb-2" th:text="${product.productName}">상품명</h6>
-          <p class="card-text fw-bold text-dark mb-1"
-             th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + '원'">10,000원</p>
+		  <!-- 할인 중일 때 -->
+		        <div th:if="${product.onSale}">
+		          <span class="text-muted text-decoration-line-through me-2"
+		                th:text="${#numbers.formatInteger(product.price, 3, 'COMMA')} + '원'">
+		          </span>
+		          <span class="fw-bold text-danger"
+		                th:text="${#numbers.formatInteger(product.displayPrice, 3, 'COMMA')} + '원'">
+		          </span>
+		        </div>
+
+		        <!-- 할인 아닐 때 -->
+		        <div th:unless="${product.onSale}">
+		          <span class="fw-bold text-dark"
+		                th:text="${#numbers.formatInteger(product.displayPrice, 3, 'COMMA')} + '원'">
+		          </span>
+		        </div>
         </div>
       </div>
     </div>
