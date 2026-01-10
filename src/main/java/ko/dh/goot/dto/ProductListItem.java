@@ -25,7 +25,7 @@ public class ProductListItem {
 
     /** 할인 여부 */
     public boolean isOnSale() {
-        return salePrice != null;
+        return salePrice != null? true : false; // salePrice값이 있으면 isSale값 true, ProductListItem객체에 해당필드가 없어도 getter 기준으로 직렬화 됨 
     }
 
     /** 할인율 (옵션) */

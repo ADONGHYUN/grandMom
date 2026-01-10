@@ -32,6 +32,8 @@ public class ProductController {
 	    List<ProductListItem> productList = productService.selectProductList(param);
 	    model.addAttribute("productList", productList);
 	    
+	    System.out.println(productList);
+	    System.out.println("productList::");
 	    return "product/productList";
 	}
 
